@@ -24,4 +24,6 @@ Cd into the directory
 Make the file 
 `make Subtask1`\
 Execute the file with the image name as the argument 
-`.\Subtask1 a.png`\
+`.\Subtask1 a.png`
+
+You need to have opencv2 to be able to execute the file
