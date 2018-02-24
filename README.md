@@ -17,11 +17,11 @@ no. of nodes to handle by 25. The grids with obstacles are marked as blocked.
 Then I created a matrix storing the details of each grid and implemented the algorithm.
 
 To use this program\
-Clone the repo\
+Clone the repo 
 `git clone https://www.github.com/thelethalcode/AGV-Task1.git`\
-Cd into the directory\
+Cd into the directory
 `cd AGV-Task1`\
-Make the file\
+Make the file 
 `make Subtask1`\
-Execute the file with the image name as the argument\
+Execute the file with the image name as the argument 
 `.\Subtask1 a.png`\
