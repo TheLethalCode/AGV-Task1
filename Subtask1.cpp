@@ -7,24 +7,30 @@ using namespace cv;
 #define se second
 #define ma make_pair
 
+Mat A;
+int Ar, Ac, n;
+
 //Structure to hold the details of the grid
 struct tryst
 {
-  int i,j,f,g,h,parenti,parentj;
-  bool wall,closed;
-  // Comparison operator for the set
-  bool operator <(const tryst& judo) const
+  int i,j,parenti,parentj;
+  float f,g,h;
+  bool wall,closed,open;
+};
+
+tryst grid[200][200];
+tryst start_point,end_point;
+
+struct tryst_compare
+{
+  bool operator()(const tryst *lhs, const tryst *rhs) const
   {
-    return f < judo.f;
+    return lhs->f < rhs->f;
   }
 };
 
-Mat A;
-int Ar, Ac, n;
-tryst start_point,end_point;
-
 // Function to draw and print the path
-void draw(tryst grid[][150])
+void draw()
 {
   int i = end_point.i, j = end_point.j;
   vector< pair<int,int> > path;
@@ -32,6 +38,15 @@ void draw(tryst grid[][150])
   {
     int te1,te2;
     path.push_back(ma(i,j));
+    for(int k=0;k<n;k++)
+    {
+      for(int l=0;l<n;l++)
+      {
+        A.at<Vec3b>(i*n+k,j*n+l)[0] = 255;
+        A.at<Vec3b>(i*n+k,j*n+l)[1] = 0;
+        A.at<Vec3b>(i*n+k,j*n+l)[2] = 0;
+      }
+    }
     for(int k=0;k<n;k++)
     {
       for(int l=0;l<n;l++)
@@ -54,7 +69,7 @@ void draw(tryst grid[][150])
 }
 
 //Checks for a valid cell or not
-bool Check(tryst grid[][150],int i, int j)
+bool possCheck(int i, int j)
 {
   if(grid[i][j].wall)
   return false;
@@ -62,226 +77,11 @@ bool Check(tryst grid[][150],int i, int j)
   return false;
   if(j<0 || j>= Ac/n)
   return false;
-  if(grid[i][j].closed)
-  return false;
   return true;
 }
 
-//Finds all the successors and checks for their validity and returns 1 if it is the detination
-int successor(tryst grid[][150], set<tryst> &open, int r, int s)
-{
-  //Up
-  int i = r, j=s+1;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //Down
-  i = r, j=s-1;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //Left
-  i = r-1, j=s;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //Right
-  i = r+1, j=s;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //top-right
-  i = r+1, j=s+1;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //Top-left
-  i = r-1, j=s+1;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //Bottom right
-  i = r+1, j=s-1;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-
-  //Bottom Left
-  i = r-1, j=s-1;
-  if(i==end_point.i && j==end_point.j)
-  {
-    grid[i][j].parenti = r;
-    grid[i][j].parentj = s;
-    grid[i][j].closed = true;
-    return 1;
-  }
-  if(Check(grid,i,j))
-  {
-    int te1,te2,te;
-    te1 = grid[r][s].g + 1;
-    te2 = abs(end_point.i - i) + abs(end_point.j - j);
-    te = te1 + te2;
-    if(te <= grid[i][j].f)
-    {
-      grid[i][j].g = te1;
-      grid[i][j].h = te2;
-      grid[i][j].f = te;
-      grid[i][j].parenti = r;
-      grid[i][j].parentj = s;
-      open.insert(grid[i][j]);
-    }
-  }
-  return 0;
-}
-
 //Finds all the obstacles and initializes the grid with their initial values
-void Trust(tryst grid[][150])
+void Trust()
 {
  for(int i=0;i < Ar/n;i++)
   {
@@ -292,7 +92,7 @@ void Trust(tryst grid[][150])
         {
           for(int l=0;l<n;l++)
           {
-            if(A.at<Vec3b>(i*n+k,j*n+l)[0] > 0 && A.at<Vec3b>(i*n+k,j*n+l)[1] > 0)
+            if(A.at<Vec3b>(i*n+k,j*n+l)[0] > 150 && A.at<Vec3b>(i*n+k,j*n+l)[1] > 150 && A.at<Vec3b>(i*n+k,j*n+l)[2] > 150 )
             {
               flag = 1;
               break;
@@ -303,8 +103,6 @@ void Trust(tryst grid[][150])
         }
         if((i!=end_point.i || j != end_point.j) && (i!=start_point.i || j!=start_point.j))
         {
-          if(i==76 && j==3)
-          cout<<"fsdb"<<endl;
           if(!flag)
           {
             grid[i][j].i=i;
@@ -314,6 +112,7 @@ void Trust(tryst grid[][150])
             grid[i][j].f=1e9;
             grid[i][j].wall=false;
             grid[i][j].closed = false;
+            grid[i][j].open = false;
           }
           if(flag)
           {
@@ -324,6 +123,7 @@ void Trust(tryst grid[][150])
             grid[i][j].f=1e9;
             grid[i][j].wall=true;
             grid[i][j].closed = false;
+            grid[i][j].open = false;
           }
         }
         flag=0;
@@ -332,74 +132,115 @@ void Trust(tryst grid[][150])
 }
 
 //Finds the starting point
-void Start(tryst grid[][150])
+void Start()
 {
-  int gr_imin=1000, gr_imax=0, gr_jmin=1000, gr_jmax=0;
   for(int i=0;i<A.rows;i++)
   {
     for(int j=0;j<A.cols;j++)
     {
-      if(A.at<Vec3b>(i,j)[1] > 0 && A.at<Vec3b>(i,j)[0]==0)
+      if(A.at<Vec3b>(i,j)[1] > A.at<Vec3b>(i,j)[0] && A.at<Vec3b>(i,j)[1] > A.at<Vec3b>(i,j)[2])
       {
-        if(gr_imax < i)
-        gr_imax=i;
-        if(gr_jmax < j)
-        gr_jmax=j;
-        if(gr_imin > i)
-        gr_imin=i;
-        if(gr_jmin > j)
-        gr_jmin=j;
+        int r = i/n +2,s=j/n;
+        start_point.i = r ;
+        start_point.j = s;
+        grid[r][s].i = r;
+        grid[r][s].j = s;
+        grid[r][s].f = 0;
+        grid[r][s].g = 0;
+        grid[r][s].h = 0;
+        grid[r][s].wall = false;
+        grid[r][s].closed = false;
+        grid[r][s].open = true;
+        return;
       }
     }
   }
-
-  start_point.i = (gr_imin + gr_imax)/(2*n);
-  start_point.j = (gr_jmin + gr_jmax)/(2*n);
-  int a= start_point.i, b=start_point.j;
-  grid[a][b].i=a;grid[a][b].j=b;
-  start_point.f = 0;grid[a][b].f=0;
-  start_point.g = 0;grid[a][b].g=0;
-  start_point.h = 0;grid[a][b].h=0;
-  start_point.wall = false;grid[a][b].wall=false;
-  start_point.closed = false;grid[a][b].closed=false;
 }
 
 //Finds the ending point
 void End()
 {
-  int r_imin=1000, r_imax=0, r_jmin=1000, r_jmax=0;
   for(int i=0;i<A.rows;i++)
   {
     for(int j=0;j<A.cols;j++)
     {
-      if(A.at<Vec3b>(i,j)[2] > 0 && A.at<Vec3b>(i,j)[0]==0)
+      if(A.at<Vec3b>(i,j)[2] > A.at<Vec3b>(i,j)[0] && A.at<Vec3b>(i,j)[2] > A.at<Vec3b>(i,j)[1])
       {
-        if(r_imax < i)
-        r_imax=i;
-        if(r_jmax < j)
-        r_jmax=j;
-        if(r_imin > i)
-        r_imin=i;
-        if(r_jmin > j)
-        r_jmin=j;
+        int r = i/n + 2,s=j/n;
+        end_point.i = r;
+        end_point.j = s;
+        grid[r][s].i = r;
+        grid[r][s].j = s;
+        grid[r][s].f = 0;
+        grid[r][s].g = 0;
+        grid[r][s].h = 0;
+        grid[r][s].wall = false;
+        grid[r][s].closed = false;
+        grid[r][s].open = false;
+        return;
       }
     }
   }
-  end_point.i = (r_imin + r_imax)/(2*n);
-  end_point.j = (r_jmin + r_jmax)/(2*n);
+}
+
+void successoradd(int r, int s, int i, int j, set<tryst *, tryst_compare> &open)
+{
+  if(possCheck(i,j) && !grid[i][j].closed)
+  {
+    float g = grid[r][s].g + 1;
+    float h = sqrt((end_point.i - i)*(end_point.i - i) + (end_point.j - j)*(end_point.j - j));
+    float f = g+h;
+    if(!grid[i][j].open )
+    {
+      grid[i][j].g = g;
+      grid[i][j].h = h;
+      grid[i][j].f = f;
+      grid[i][j].parenti = r;
+      grid[i][j].parentj = s;
+      open.insert(&grid[i][j]);
+      grid[i][j].open = true;
+    }
+    else
+    {
+      if(g < grid[i][j].g )
+      {
+        grid[i][j].g = g;
+        grid[i][j].h = h;
+        grid[i][j].f = f;
+        grid[i][j].parenti = r;
+        grid[i][j].parentj = s;
+      }
+    }
+  }
+}
+
+void successor(int r, int s, set<tryst *, tryst_compare> &open)
+{
+  successoradd(r,s,r+1,s,open);
+  successoradd(r,s,r-1,s,open);
+  successoradd(r,s,r,s+1,open);
+  successoradd(r,s,r,s-1,open);
+  successoradd(r,s,r+1,s-1,open);
+  successoradd(r,s,r+1,s+1,open);
+  successoradd(r,s,r-1,s-1,open);
+  successoradd(r,s,r-1,s+1,open);
 }
 
 //Function to implement the A-star algorithm
-int Astar(tryst grid[][150], set<tryst> &open)
+int Astar(set<tryst *, tryst_compare> &open)
 {
   while(!open.empty())
   {
-    tryst test = *open.begin();
+    tryst *test = *open.begin();
     open.erase(open.begin());
-    int i = test.i, j=test.j;
-    grid[i][j].closed = true;
-    if(successor(grid,open,i,j))
-    return 1;
+    (*test).open=false;
+    (*test).closed = true;
+    if(test->i == end_point.i && test->j == end_point.j )
+    {
+      draw();
+      return 1;
+    }
+    successor(test->i,test->j,open);
   }
   return 0;
 }
@@ -408,19 +249,17 @@ int main(int argc, char * argv[])
 {
   A= imread(argv[1]);
   Ar = A.rows, Ac = A.cols, n = 5;
-  tryst grid[150][150];
-  set<tryst> open;
-  Start(grid);
+  set<tryst *, tryst_compare> open;
+  Start();
   End();
-  Trust(grid);
+  Trust();
   cout<<"The Co-ordinates of the starting point is "<<start_point.i<<" "<<start_point.j<<endl;
   cout<<"The Co-ordinates of the destination point is "<<end_point.i<<" "<<end_point.j<<endl;
-  open.insert(start_point);
-  if(Astar(grid,open))
+  open.insert(&grid[start_point.i][start_point.j]);
+  if(Astar(open))
   cout<<"The Destination is Found"<<endl;
   else
   cout<<"Either destination is not reachable or somethin wrong with the algorithm"<<endl;
-  draw(grid);
   namedWindow("Window",WINDOW_NORMAL);
   imshow("Window",A);
   waitKey(0);

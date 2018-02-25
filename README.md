@@ -14,16 +14,17 @@ Initially the picture size on an average is 640x400, which is too much nodes for
 to handle efficiently. So, I divided the pixels into 5*5 grids, effectively reducing the\
 no. of nodes to handle by 25. The grids with obstacles are marked as blocked.
 
-Then I created a matrix storing the details of each grid and implemented the algorithm.
+Then I created a matrix storing the details of each grid and implemented the algorithm\
+with set data type for open list.
 
 To use this program\
-Clone the repo 
+Clone the repo
 `git clone https://www.github.com/thelethalcode/AGV-Task1.git`\
 Cd into the directory
 `cd AGV-Task1`\
-Make the file 
+Make the file
 `make Subtask1`\
-Execute the file with the image name as the argument 
+Execute the file with the image name as the argument
 `.\Subtask1 a.png`
 
-You need to have opencv2 to be able to execute the file
+You need to have opencv2 to be able to execute the file.
