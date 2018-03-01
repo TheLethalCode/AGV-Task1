@@ -12,7 +12,7 @@ The image is given to us. I detected the starting point and the ending point and
 found the path as close to the shortest path as possible using A* algorithm. Here, I\
 considered the diagonal movement to cost the same as a straight movement.
 
-The path is printed along with the path length as well as shown in the image.
+The path is printed as well as shown in the image along with the path length.
 
 I created a structure "tryst" to store the details of each pixel
 
@@ -31,3 +31,27 @@ Execute the file with the image name as the argument
 `.\Subtask1 a.png`
 
 You need to have opencv2 to be able to execute the file.
+
+## Subtask-2
+
+In this subtask also, we are required to find the shortest path, but this time we\
+have to take into account the dimensions of the bot.
+
+So initially while initialising the walls, I initialised the pixels in the Minkowski\
+sum of the bot and the obstacles as not traversable.
+
+The rest of the algorithm is the same as the first subtask. Also, along with the path\
+being printed and shown, this time, the movement of the bot along the path is also shown.\
+A space of 2 pixels is left as a buffer space between the obstacles and the bot.
+
+To use this program\
+Clone the repo
+`git clone https://www.github.com/thelethalcode/AGV-Task1.git`\
+Cd into the directory
+`cd AGV-Task1`\
+Make the file
+`make Subtask2`\
+Execute the file with the image name as the argument
+`.\Subtask2 a.png`
+
+And don't forget the opencv library
