@@ -7,7 +7,7 @@ using namespace cv;
 #define se second
 #define ma make_pair
 #define LENGTH 10
-#define BREADTH 30
+#define BREADTH 20
 
 // Structure to hold the details of the pixels
 struct tryst
@@ -90,9 +90,6 @@ void Killer_Bot :: draw()
   {
     int te1,te2;
     path.push_back(ma(i,j));
-    Cost_map.at<Vec3b>(i,j)[0] = 255;
-    Cost_map.at<Vec3b>(i,j)[1] = 0;
-    Cost_map.at<Vec3b>(i,j)[2] = 0;
     te1 = grid[i][j].parenti;
     te2 = grid[i][j].parentj;
     i = te1;
@@ -100,12 +97,6 @@ void Killer_Bot :: draw()
     pathlength++;
   }
   path.push_back(ma(i,j));
-  cout<<endl<<"The path followed by the center of the bot is"<<endl;
-  for(vector< pair<int,int> >::reverse_iterator it =  path.rbegin();it!=path.rend();it++)
-  {
-    cout<<it->fi<<" "<<it->se<<endl;
-  }
-  cout<<"The length of the path is "<<pathlength<<endl;
 
   namedWindow("Movingbot",WINDOW_NORMAL);
   imshow("Movingbot",Cost_map);
@@ -128,6 +119,17 @@ void Killer_Bot :: draw()
     break;
   }
   destroyWindow("Movingbot");
+
+  cout<<endl<<"The path followed by the center of the bot is"<<endl;
+  for(vector< pair<int,int> >::reverse_iterator it =  path.rbegin();it!=path.rend();it++)
+  {
+    int i=it->fi,j=it->se;
+    cout<<it->fi<<" "<<it->se<<endl;
+    Cost_map.at<Vec3b>(i,j)[0] = 255;
+    Cost_map.at<Vec3b>(i,j)[1] = 0;
+    Cost_map.at<Vec3b>(i,j)[2] = 0;
+  }
+  cout<<"The length of the path is "<<pathlength<<endl;
 }
 
 // Checks for a valid cell or not
