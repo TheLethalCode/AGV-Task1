@@ -5,17 +5,20 @@ This is the repository for all the codes related to AGV Task - 1 (Path Finder)
 ## Subtask-1
 
 In this subtask we are required to find the shortest path between the starting\
-point and the ending point with obstacles in between them.
+point and the ending point with obstacles in between them, considering the bot has\
+a point object
 
-The image is given to us.I detected the starting point and the ending point and\
-found the path as close to the shortest path as possible using A* algorithm.
+The image is given to us. I detected the starting point and the ending point and\
+found the path as close to the shortest path as possible using A* algorithm. Here, I\
+considered the diagonal movement to cost the same as a straight movement.
 
-Initially the picture size on an average is 640x400, which is too much nodes for A*\
-to handle efficiently. So, I divided the pixels into 5*5 grids, effectively reducing the\
-no. of nodes to handle by 25. The grids with obstacles are marked as blocked.
+The path is printed along with the path length as well as shown in the image.
 
-Then I created a matrix storing the details of each grid and implemented the algorithm\
-with set data type for open list.
+I created a structure "tryst" to store the details of each pixel
+
+Then I created a matrix of tryst storing the details of each pixel and implemented the algorithm\
+with set data type of tryst ordered by the f-cost as open list. The closed list is\
+incorporated in the matrix.
 
 To use this program\
 Clone the repo
