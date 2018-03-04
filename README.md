@@ -56,6 +56,9 @@ Then I created a matrix of tryst storing the details of each pixel and implement
 with set data type of tryst ordered by the f-cost as open list. The closed list is\
 incorporated in the matrix.
 
+The output of the sample image will look like this
+![Alt text](Subtask1.png)
+
 To use this program\
 Clone the repo
 `git clone https://www.github.com/thelethalcode/AGV-Task1.git`\
@@ -90,6 +93,9 @@ Make the file
 Execute the file with the image name as the argument
 `.\Subtask2 a.png`
 
+The link for the output of the program is
+
+
 And don't forget the opencv library
 
 ## Subtask-3
@@ -113,3 +119,5 @@ Make the file
 `make Subtask3`\
 Execute the file with the image name as the argument
 `.\Subtask3 a.png`
+
+The link for the output of the program is
