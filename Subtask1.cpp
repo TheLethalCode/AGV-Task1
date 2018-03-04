@@ -199,7 +199,11 @@ void Killer_Bot :: successoradd(int r, int s, int i, int j, set<tryst *, tryst_c
 {
   if(possCheck(i,j) && !grid[i][j].closed)
   {
-    float g = grid[r][s].g + 1;
+    float g;
+    if(abs(r-i)-abs(s-j))
+      g = grid[r][s].g + 1;
+    else
+      g = grid[r][s].g + 1.414;
     float h = sqrt((end_point.fi - i)*(end_point.fi - i) + (end_point.se - j)*(end_point.se - j));
     float f = g+h;
     if(!grid[i][j].open )

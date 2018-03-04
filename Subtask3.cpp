@@ -6,8 +6,9 @@ using namespace cv;
 #define fi first
 #define se second
 #define ma make_pair
-#define LENGTH 10
-#define BREADTH 20
+#define pb push_back
+#define LENGTH 20
+#define BREADTH 10
 
 // Function to calculate the execution time
 double tick()
@@ -45,15 +46,22 @@ class Killer_Bot
     vector< pair<int,int> > path;
     vector< vector<tryst> > grid;
     set<tryst *, tryst_compare> open;
-    void draw();
-    int possCheck(int,int);
-    void successor(int r, int s, set<tryst *, tryst_compare> &open);
-    void successoradd(int r, int s, int i, int j, set<tryst *, tryst_compare> &open);
-    void Config();
-    void Trust();
+    float bot_a;
     void Start();
     void End();
+    void Trust();
+    void Config();
     int Astar(set<tryst *, tryst_compare> &open);
+    void successor(int r, int s, set<tryst *, tryst_compare> &open);
+    void successoradd(int r, int s, int i, int j, set<tryst *, tryst_compare> &open);
+    int possCheck(int,int);
+    void draw();
+    void Prelimpath();
+    void Pathsmoother(vector< pair<int,int> > &path1);
+    bool Traversable(pair<int,int>, pair<int,int>);
+    void Movement(vector< pair<int,int> > &path1);
+    void fill(int,int,Mat);
+    void Pathprinting();
 
   public:
     Killer_Bot(Mat A, int x, int y);
@@ -69,11 +77,12 @@ Killer_Bot :: Killer_Bot(Mat A, int x, int y)
   Ac=y;
   bot_l = LENGTH;
   bot_w = BREADTH;
+  bot_a = 0;
   pathlength = 0;
   grid.resize(Ar,vector<tryst>(Ac));
 }
 
-// A function to find the path
+// A function to find the path ..... It calls all other functions....THE BOSS FUNCTION
 vector<pair<int,int> > Killer_Bot :: getpath()
 {
   Start();
@@ -189,9 +198,10 @@ void Killer_Bot :: Config()
     for(int j=0;j<Ac;j++)
     {
       int flag =0;
-      for(int k= -1*bot_l/2 -2;k < bot_l - bot_l/2 +2;k++)
+      int max_l = max(bot_l,bot_w);
+      for(int k= -1*max_l/2 -2;k < max_l - max_l/2 +2;k++)
       {
-        for(int l= -1*bot_w/2 -2;l < bot_w - bot_w/2 + 2;l++)
+        for(int l= -1*max_l/2 -2;l < max_l - max_l/2 + 2;l++)
         {
           if(possCheck(i+k,j+l) == -1)
           {
@@ -231,20 +241,7 @@ int Killer_Bot :: Astar(set<tryst *, tryst_compare> &open)
   return 0;
 }
 
-// Calls all the 8 neighbours
-void Killer_Bot :: successor(int r, int s, set<tryst *, tryst_compare> &open)
-{
-  successoradd(r,s,r+1,s,open);
-  successoradd(r,s,r-1,s,open);
-  successoradd(r,s,r,s+1,open);
-  successoradd(r,s,r,s-1,open);
-  successoradd(r,s,r+1,s-1,open);
-  successoradd(r,s,r+1,s+1,open);
-  successoradd(r,s,r-1,s-1,open);
-  successoradd(r,s,r-1,s+1,open);
-}
-
-//Checks each successor whether it is valid or not and then adds it to the open list if necessary
+// Checks each successor whether it is valid or not and then adds it to the open list if necessary
 void Killer_Bot :: successoradd(int r, int s, int i, int j, set<tryst *, tryst_compare> &open)
 {
   if(!possCheck(i,j) && !grid[i][j].closed)
@@ -280,6 +277,19 @@ void Killer_Bot :: successoradd(int r, int s, int i, int j, set<tryst *, tryst_c
   }
 }
 
+// Calls all the 8 neighbours
+void Killer_Bot :: successor(int r, int s, set<tryst *, tryst_compare> &open)
+{
+  successoradd(r,s,r+1,s,open);
+  successoradd(r,s,r-1,s,open);
+  successoradd(r,s,r,s+1,open);
+  successoradd(r,s,r,s-1,open);
+  successoradd(r,s,r+1,s-1,open);
+  successoradd(r,s,r+1,s+1,open);
+  successoradd(r,s,r-1,s-1,open);
+  successoradd(r,s,r-1,s+1,open);
+}
+
 // Checks for a valid cell or not
 int Killer_Bot :: possCheck(int i, int j)
 {
@@ -297,49 +307,114 @@ int Killer_Bot :: possCheck(int i, int j)
 // Function to draw the path and display the motion of the bot
 void Killer_Bot :: draw()
 {
+  Prelimpath();
+  vector< pair<int,int> > path1;
+  Pathsmoother(path1);
+  Movement(path1);
+  Pathprinting();
+}
+
+// Function to get in the path tracing back the parent cells
+void Killer_Bot :: Prelimpath()
+{
   int i = end_point.fi, j = end_point.se;
   while(i!=start_point.fi || j!=start_point.se)
   {
     int te1,te2;
-    path.push_back(ma(i,j));
+    path.pb(ma(i,j));
     te1 = grid[i][j].parenti;
     te2 = grid[i][j].parentj;
     i = te1;
     j = te2;
-    pathlength++;
   }
-  path.push_back(ma(i,j));
+  path.pb(ma(i,j));
+}
 
+// Tries to remove unnecessary turnings from the path .... THE PATHSMOOTHER
+void Killer_Bot :: Pathsmoother(vector< pair<int,int> > &path1)
+{
+  vector< pair<int,int> >::reverse_iterator init =  path.rbegin(),current = init +1;
+  path1.pb(*init);
+  while(current + 1 != path.rend())
+  {
+    if(Traversable(*init, *(current+1)))
+      current++;
+    else
+    {
+      path1.pb(*current);
+      init = current;
+      current + 1;
+    }
+  }
+  path1.pb(*current);
+  path.clear();
+}
+
+// Function to check whether a direct line is possible or not from one point to another
+bool Killer_Bot :: Traversable(pair<int,int> a, pair<int,int> b)
+{
+  LineIterator Go(Cost_map,Point(a.se,a.fi),Point(b.se,b.fi));
+  for(int i=0;i < Go.count;i++,Go++)
+  {
+    Point temp;
+    temp = Go.pos();
+    if(grid[temp.y][temp.x].blocked)
+      return false;
+  }
+  return true;
+}
+
+// Shows the movement of the bot on the image
+void Killer_Bot :: Movement(vector< pair<int,int> > &path1)
+{
   namedWindow("Movingbot",WINDOW_NORMAL);
   imshow("Movingbot",Cost_map);
   waitKey(1000);
-  for(vector< pair<int,int> >::reverse_iterator it =  path.rbegin();it!=path.rend();it++)
+
+  for(vector< pair<int,int> >:: iterator it =  path1.begin();it + 1 !=path1.end();it++)
   {
-    Mat A = Cost_map.clone();
-    int i = it->fi, j = it->se;
-    for(int k= -1*bot_l/2;k < bot_l - bot_l/2 ;k++)
+    LineIterator Go(Cost_map,Point(it->se,it->fi),Point((it+1)->se,(it+1)->fi));
+    bot_a = atan2(((it+1)->se)-(it->se),-((it+1)->fi)+(it->fi));
+    bot_a *= (180/3.1415);
+    for(int l=0;l < Go.count;l++,Go++)
     {
-      for(int l= -1*bot_w/2;l < bot_w - bot_w/2;l++)
-      {
-        A.at<Vec3b>(i+k,j+l)[0]=255;
-        A.at<Vec3b>(i+k,j+l)[1]=255;
-        A.at<Vec3b>(i+k,j+l)[2]=0;
-      }
+      Mat A = Cost_map.clone();
+      Point temp = Go.pos();
+      int i = temp.y,j = temp.x;
+      path.pb(ma(i,j));
+      fill(i,j,A);
+      imshow("Movingbot",A);
+      if(waitKey(20) > 0)
+      break;
     }
-    imshow("Movingbot",A);
-    if(waitKey(23) > 0)
-    break;
   }
   destroyWindow("Movingbot");
+}
 
+// Function to draw the rotated bot
+void Killer_Bot :: fill(int i, int j, Mat A)
+{
+  RotatedRect Bot(Point2f(j,i),Size2f(bot_w,bot_l), bot_a);
+  Point2f vertex[4];
+  Bot.points(vertex);
+  vector< Point > vertices;
+  for(int k=0;k<4;k++)
+    vertices.pb(vertex[k]);
+  fillConvexPoly(A,vertices,Scalar(255,255,0),8);
+}
+
+// Prints the path travelled by the center of the bot
+void Killer_Bot :: Pathprinting()
+{
   cout<<endl<<"The path followed by the center of the bot is"<<endl;
-  for(vector< pair<int,int> >::reverse_iterator it =  path.rbegin();it!=path.rend();it++)
+  for(vector< pair<int,int> >::iterator it = path.begin();it !=path.end();it++)
   {
     int i=it->fi,j=it->se;
     cout<<it->fi<<" "<<it->se<<endl;
-    Cost_map.at<Vec3b>(i,j)[0] = 255;
-    Cost_map.at<Vec3b>(i,j)[1] = 0;
-    Cost_map.at<Vec3b>(i,j)[2] = 0;
+    Cost_map.at<Vec3b>(i,j)[0]=255;
+    Cost_map.at<Vec3b>(i,j)[1]=0;
+    Cost_map.at<Vec3b>(i,j)[2]=0;
+    pathlength++;
   }
   cout<<"The length of the path is "<<pathlength<<endl;
 }
