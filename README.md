@@ -94,7 +94,7 @@ Execute the file with the image name as the argument
 `.\Subtask2 a.png`
 
 The link for the output of the program is
-
+https://github.com/TheLethalCode/AGV-Task1/blob/master/Subtask2.mp4
 
 And don't forget the opencv library
 
@@ -121,3 +121,4 @@ Execute the file with the image name as the argument
 `.\Subtask3 a.png`
 
 The link for the output of the program is
+https://github.com/TheLethalCode/AGV-Task1/blob/master/Subtask3.mp4
